@@ -1,0 +1,6 @@
+*.o
+*.hi
+solver
+solver2
+
+.vscode/
