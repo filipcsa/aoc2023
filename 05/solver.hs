@@ -11,23 +11,33 @@ parseAlmanac :: [String] -> Almanac
 parseAlmanac lines = Almanac { seeds = seeds, maps = maps } where
   strSegments = splitOn [""] lines
   seeds = parseSeeds ((head . head) strSegments)
-  maps = foldl parseMap [] (tail strSegments)
+  maps = parseMapRec (tail strSegments) seeds
+  
+parseMapRec :: [[String]] -> [Int] -> [Map Int Int]
+parseMapRec [] _ = []
+parseMapRec (strMap:strMaps) keys = m : parseMapRec strMaps vals where
+  vkrs = parseVKRs (tail strMap)-- value, key, range tuples
+  vals = map (key2Val vkrs) keys
+  m = fromList $ zip keys vals
+
+key2Val :: [(Int, Int, Int)] -> Int -> Int
+key2Val vkrs key = val where
+  vkr = filter (\(v, k, r) -> key >= k && key < k + r) vkrs
+  val = case vkr of
+    [] -> key
+    ((v,k,r):_) -> key - (k-v)
+
+parseVKRs :: [String] -> [(Int, Int, Int)]
+parseVKRs [] = []
+parseVKRs (str:strss) = (v, k, r) : parseVKRs strss where 
+  numStrs = splitOn " " str
+  [v, k, r] = map read numStrs :: [Int]
 
 parseSeeds :: String -> [Int]
 parseSeeds str = seeds where
   numStr = tail $ dropWhile (/=' ') str
   numStrs = splitOn " " numStr
   seeds = map read numStrs
-
-parseMap :: [Map Int Int] -> [String] -> [Map Int Int]
-parseMap acc lines = acc ++ [fromList kvPairs] where
-  kvPairs = concatMap parseKVRange (tail lines)
-
-parseKVRange :: String -> [(Int, Int)]
-parseKVRange str = kvPairs where
-  numStrs = splitOn " " str
-  [v, k, r] = map read numStrs :: [Int]
-  kvPairs = [ (k+i,v+i) | i <- [0..(r-1)] ]
 
 lookupWithDefault :: Map Int Int -> Int -> Int
 lookupWithDefault m k = case lookup k m of
