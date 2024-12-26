@@ -10,6 +10,17 @@ data Path =
     Source { pos :: Pos }
   | Node { pos :: Pos, prev :: Path }
 
+-- OBSERVATIONS
+-- if a pos is reachable in n steps, it is then also reachable in n+2 steps (go to prev and back)
+
+-- Lets first compute n0 for all the poss on a single (non infinite) map. 
+-- We can the partiotion the poss into two sets
+  -- poss reachable when n is odd (if n0 of poss is odd)
+  -- poss reachable when n is even (if n0 of poss is even)
+
+-- The question then remains how to compute n0 for far away poss,
+-- Clearly, the fact that the map is repeated can be used somehow.
+
 findStartingPos :: Layout -> Pos
 findStartingPos layout =
   head $ [ (x,y) | x <- [0..h-1], y <- [0..w-1], layout !! x !! y == 'S' ] where
@@ -73,6 +84,6 @@ main = do
   let layout = lines contents :: Layout
   let startingPos = findStartingPos layout
   print startingPos
-  let reachablePossInSteps = getReachablePossInSteps layout startingPos 6
-  showReachable layout reachablePossInSteps
+  let reachablePossInSteps = getReachablePossInSteps layout startingPos 64
+  -- showReachable layout reachablePossInSteps
   print $ length reachablePossInSteps

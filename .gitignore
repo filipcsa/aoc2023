@@ -2,5 +2,6 @@
 *.hi
 solver
 solver2
-
+input.txt
+simple-input.txt
 .vscode/
