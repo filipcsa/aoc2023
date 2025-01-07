@@ -3,6 +3,5 @@ import Prelude hiding (lookup)
 
 main :: IO ()
 main = do
-  contents <- getContents
-  let inputLines = lines contents
+  inputLines <- fmap lines getContents
   print 0
