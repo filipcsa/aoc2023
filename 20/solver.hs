@@ -21,6 +21,11 @@ main = do
   let conMap = M.fromList $ map (\(n,_) -> (n, M.fromList $ map (\e -> (fst e, Low)) $ filter (\(n1,n2) -> n2 == n) edges )) $ filter (\(_, c) -> c == '&') $ M.toList modMap
   let signals = third $ last $ take 1001 $ iterate (run adjMap [("button", "broadcaster", Low)]) (flopMap, conMap, [])
   print $ length (filter (==Low) $ map third signals) * length (filter (==High) $ map third signals)
+  -- part 2
+  let ns = ["rh", "jm", "jg", "hf"]
+  -- print $ M.findWithDefault M.empty m conMap
+  let cycles = map (\n -> length $ takeWhile (\(_,_,ps) -> (n, "mg", High) `notElem` ps ) $ iterate (run adjMap [("button", "broadcaster", Low)]) (flopMap, conMap, [])) ns
+  print $ foldl lcm 1 cycles
 
 third :: (a,b,c) -> c
 third (_,_,c) = c
