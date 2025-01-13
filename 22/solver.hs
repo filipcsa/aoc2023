@@ -1,7 +1,8 @@
 import Data.List.Split (splitOn)
-import Data.List (sortBy)
+import Data.List (sortBy, nub)
 import Data.Function (on)
 import qualified Data.Map as M
+import GHC.Plugins (notNull)
 
 type Pos = (Int, Int, Int)
 type Brick = (Pos, Pos)
@@ -12,6 +13,14 @@ main = do
   let bricks = sortBy (compare `on` (third . snd)) $ map parseBrick inputLines
   let (brickByHeight, supports) = foldl processBrick (M.empty, M.empty) bricks
   print $ length $ filter (canDisintegrate supports) $ M.keys supports
+  print $ sum $ map (countFalls supports . (: [])) (M.keys supports)
+
+-- inefficient but quick implementation for part 2 ...
+countFalls :: M.Map Brick [Brick] -> [Brick] -> Int
+countFalls supports supported
+  | length supported == length supported' = length supported - 1
+  | otherwise = countFalls supports supported' where
+    supported' = supported ++ map fst (filter (\(k,vs) -> notNull vs && k `notElem` supported && all (`elem` supported) vs) $ M.toList supports)
 
 canDisintegrate :: M.Map Brick [Brick] -> Brick -> Bool
 canDisintegrate supports b = [b] `notElem` M.elems supports
