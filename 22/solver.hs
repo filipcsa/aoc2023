@@ -11,8 +11,10 @@ main = do
   inputLines <- fmap lines getContents
   let bricks = sortBy (compare `on` (third . snd)) $ map parseBrick inputLines
   let (brickByHeight, supports) = foldl processBrick (M.empty, M.empty) bricks
-  -- let supportedBy = concatMap (\) M.toList supports
-  print 0
+  print $ length $ filter (canDisintegrate supports) $ M.keys supports
+
+canDisintegrate :: M.Map Brick [Brick] -> Brick -> Bool
+canDisintegrate supports b = [b] `notElem` M.elems supports
 
 processBrick :: (M.Map Int [Brick], M.Map Brick [Brick]) -> Brick -> (M.Map Int [Brick], M.Map Brick [Brick])
 processBrick (bbh, ss) b
@@ -20,13 +22,13 @@ processBrick (bbh, ss) b
   | null supports = processBrick (bbh, ss) (moveDown b)
   | otherwise = (M.insert hb (b : M.findWithDefault [] hb bbh) bbh, M.insert b supports ss) where
     hb = snd $ getHeight b
-    supports = getSupports bbh b 
+    supports = getSupports bbh b
 
 getSupports :: M.Map Int [Brick] -> Brick -> [Brick]
 getSupports bbh b = filter (overlap b) $ M.findWithDefault [] (fst (getHeight b) - 1) bbh
 
 overlap :: Brick -> Brick -> Bool
-overlap ((x1,y1,_),(x2,y2,_)) ((x'1,y'1,_),(x'2,y'2,_)) = 
+overlap ((x1,y1,_),(x2,y2,_)) ((x'1,y'1,_),(x'2,y'2,_)) =
   overlap' (x1,x2) (x'1,x'2) && overlap' (y1,y2) (y'1,y'2)
 
 overlap' :: (Int, Int) -> (Int, Int) -> Bool
