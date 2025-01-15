@@ -2,18 +2,13 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 
 type Pos = (Int, Int)
+type Edge = (Pos, Pos, Int)
 
 main :: IO ()
 main = do
   strs <- fmap lines getContents
-  print $ maximum $ map (\ps -> length ps - 1) $ dfs strs (S.singleton (0,1)) (0,1) findSuccs1
-  print $ maximum $ map (\ps -> length ps - 1) $ dfs strs (S.singleton (0,1)) (0,1) findSuccs2
-
-dfs :: [String] -> S.Set Pos -> Pos -> ([String] -> Pos -> [Pos]) -> [S.Set Pos]
-dfs strs ps p fs
-  | p == (length strs - 1, length (head strs) - 2) = [ps]
-  | otherwise = concatMap (\s -> dfs strs (S.insert s ps) s fs) succs where
-    succs = filter (`S.notMember` ps) $ fs strs p
+  let edges = dfsEdges strs findSuccs1 (0,1) (0,1) (S.singleton (0,1)) 
+  print 0
 
 findSuccs1 :: [String] -> Pos -> [Pos]
 findSuccs1 strs (x,y) = concat [l,r,u,d] where
