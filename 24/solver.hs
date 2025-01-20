@@ -1,34 +1,31 @@
 import Data.List.Split (splitOn)
+import GHC.CmmToAsm.AArch64.Instr (_d)
 type Pos = (Int, Int, Int)
 type Vel = (Int, Int, Int)
 
-minArea :: Int
-minArea = 7
+minArea :: Double
+minArea = 200000000000000
 
-maxArea :: Int
-maxArea = 0
+maxArea :: Double
+maxArea = 400000000000000
 
 main :: IO ()
 main = do
   inputLines <- fmap lines getContents
   let possAndVels = map parseInput inputLines
-  let crossTimes = [ findCrossTime pv1 pv2 | pv1 <- possAndVels, pv2 <- possAndVels, pv1 /= pv2 ]
-  print crossTimes
-  -- print $ length $ filter validRange crossTimes
+  let crossTimes = concat [ [findCrossPos (possAndVels !! i) (possAndVels !! j) | j <- [i+1..length possAndVels - 1]] | i <- [0..length possAndVels - 1]]
+  print $ length $ filter validRange crossTimes
 
-validRange :: Maybe (Int, Int) -> Bool
-validRange Nothing = False
-validRange _ = False
+validRange :: (Double, Double) -> Bool
+validRange (x,y) = minArea <= x && x <= maxArea && minArea <= y && y <= maxArea
 
--- x1 + tvx1 = x2 + tvx2
--- t = (x1-x2) / (vx2 - vx1)
-findCrossTime :: (Pos, Vel) -> (Pos, Vel) -> Maybe Double
-findCrossTime ((x1,y1,_),(vx1,vy1,_)) ((x2,y2,_),(vx2,vy2,_)) = case (computeT x1 vx1 x2 vx2,computeT y1 vy1 y2 vy2) of
-  (Just t1, Just t2) -> if abs (t1 - t2) < 10 then Just t1 else Nothing
-  _ -> Nothing 
-
-computeT :: Int -> Int -> Int -> Int -> Maybe Double
-computeT x1 vx1 x2 vx2 = if vx1 == vx2 then Nothing else Just $ fromIntegral (x1-x2) / fromIntegral (vx2-vx1)
+findCrossPos :: (Pos, Vel) -> (Pos, Vel) -> (Double, Double)
+findCrossPos ((x1,y1,_),(vx1,vy1,_)) ((x2,y2,_),(vx2,vy2,_d)) = 
+  if t >= 0 && l >= 0 then (xcross, ycross) else (-1,-1) where
+  t = fromIntegral (vx2*(y2-y1) -vy2*(x2-x1)) / fromIntegral (vx2*vy1 - vx1*vy2)
+  l = fromIntegral (vx1*(y2-y1) -vy1*(x2-x1)) / fromIntegral (vx2*vy1 - vx1*vy2)
+  xcross = fromIntegral x1 + t * fromIntegral vx1
+  ycross = fromIntegral y1 + t * fromIntegral vy1
 
 parseInput :: String -> (Pos, Vel)
 parseInput str = ((x,y,z), (vx,vy,vz)) where
